@@ -48,7 +48,7 @@ class Investidores:
             #         reajuste_graham()
             n_ativo = 0 # para saber qual ativo
             for ativo in self.mercado.ativos:
-                if(n_ativo ==  50):
+                if(n_ativo ==  self.mercado.numero_ativos):
                     continue
                 preco = ativo[passo]
                 gasto = preco*n_acao_alterada_por_iteracao
