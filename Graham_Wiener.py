@@ -91,6 +91,15 @@ class Mercado:
         return valor_inicial
 
 
+    def visualizar_mercado(self):
+        for i in range(0,self.numero_ativos):
+            ativo = self.ativos[i]
+            plt.plot(self.time, ativo)
+            plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
+            plt.xlabel('Tempo (anos)')
+            plt.ylabel('Preço do Ativo')
+            plt.show()
+
     # Função para calcular a margem de segurança
     def calcular_margem_de_seguranca(self,valor_intrinseco,preco_mercado):
          return (valor_intrinseco - preco_mercado) / valor_intrinseco
@@ -112,6 +121,7 @@ class Mercado:
             preco_inicial = self.calcular_valor_inicial(valor_intrinseco)
             ativo = preco_inicial * np.exp((mu - 0.5 * sigma**2) * self.time + sigma * W) # para o caso de achar que esquecemos o sqrt(t), olha o W mais em cima
             self.ativos.append(ativo)
+        #self.visualizar_mercado()
 
 
 
@@ -134,14 +144,7 @@ class Resultados:
                 self.resultados_investidor_por_simulacao[i][j] = resultado_investidor
         self.visualizar_resultado_simulacao()
 
-    def visualizar_mercado(self):
-        for i in range(0,self.mercado.numero_ativos):
-            ativo = self.mercado.acoes[i]
-            plt.plot(self.mercado.time, ativo)
-            plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
-            plt.xlabel('Tempo (anos)')
-            plt.ylabel('Preço do Ativo')
-            plt.show()
+    
     def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i):
         array_min = self.investidores.array_min
         resultado_investidor_i = self.investidores.resultado_investidor_i
