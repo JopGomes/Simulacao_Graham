@@ -29,7 +29,14 @@ class Investidores:
         self.mercado = mercado
     
         self.carteira_investidor_i = np.zeros((self.numero_de_investidores, self.mercado.numero_ativos))
-    
+
+    def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i):
+        plt.plot(array_limiar,resultado_investidor_i )
+        plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
+        plt.xlabel('Graham MIN')
+        plt.ylabel('Resultado')
+        plt.show()
+
     def realizar_estrategia(self):
         n_acao_alterada_por_iteracao = self.n_acao_alterada_por_iteracao
         max_ativos_diferentes = self.max_ativos_diferentes
@@ -145,14 +152,7 @@ class Resultados:
         self.visualizar_resultado_simulacao()
 
     
-    def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i):
-        array_min = self.investidores.array_min
-        resultado_investidor_i = self.investidores.resultado_investidor_i
-        plt.plot(array_limiar,resultado_investidor_i )
-        plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
-        plt.xlabel('Graham MIN')
-        plt.ylabel('Resultado')
-        plt.show()
+
     
     def visualizar_resultado_simulacao(self):
         numero_de_investidores = self.investidores.numero_de_investidores
@@ -162,7 +162,7 @@ class Resultados:
             resultado_investidor = self.resultados_investidor_por_simulacao[i]
             media_investidor_simulacao.append(  sum(resultado_investidor) / len(resultado_investidor) )
         
-        self.visualizar_resultado_investidores(array_min,media_investidor_simulacao)
+        self.investidores.visualizar_resultado_investidores(array_min,media_investidor_simulacao)
         
 
 
