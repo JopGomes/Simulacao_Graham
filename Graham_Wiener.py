@@ -30,11 +30,41 @@ class Investidores:
         self.resultado_investidor_i = np.full(self.numero_de_investidores, self.recurso_inicial)
         self.carteira_investidor_i = np.zeros((self.numero_de_investidores, self.mercado.numero_ativos))
 
-    def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i):
+    def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i,titulo):
         plt.plot(array_limiar,resultado_investidor_i )
-        plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
+        plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM):'+titulo)
         plt.xlabel('Graham MIN')
         plt.ylabel('Resultado')
+        plt.show()
+
+    def visualizar_resultado_investidores_de_uma_so_vez(self,x, *arrays, titulo="Gráfico de Resultados"):
+        if not arrays:
+            raise ValueError("É necessário passar pelo menos um array para plotar.")
+        
+        for i, array in enumerate(arrays):
+            plt.plot(x, array, label=f'Array {i+1}')
+        
+        plt.title(titulo)
+        plt.xlabel('Graham MIN')
+        plt.ylabel('Resultado')
+        plt.legend()  # Adiciona uma legenda para identificar cada linha
+        plt.show()
+
+    def visualizar_resultado_investidores_e_desvio_padrao(self,means:list, stdv:list) -> None:
+        x = np.arange(len(means))
+        
+        # Criando gráfico de barras
+        plt.bar(x, means,yerr = stdv, color='skyblue', alpha=0.7)
+        
+        # Definindo título e rótulos dos eixos
+        plt.title(f'Gráfico das {len(means)} estratégias')
+        plt.xlabel('Estratégia')
+        plt.ylabel('Ganho')
+        
+        # Adicionando uma grade ao gráfico
+        plt.grid(True)
+        
+        # Exibindo o gráfico
         plt.show()
 
     def realizar_estrategia(self):
@@ -135,12 +165,13 @@ class Mercado:
         
         self.calcular_valor_intriseco_aleatorio()
         for valor_intrinseco in self.valores_intriseco:
-            mu = self.ajustar_mu(valor_intrinseco, valor_intrinseco, self.mu_base)
+            preco_inicial = self.calcular_valor_inicial(valor_intrinseco)
+            mu = self.ajustar_mu(preco_inicial, valor_intrinseco, self.mu_base)
             sigma = self.sigma_base
             W = np.random.standard_normal(size=self.N)
             W = np.cumsum(W.copy()) * np.sqrt(self.dt) 
             
-            preco_inicial = self.calcular_valor_inicial(valor_intrinseco)
+            
             ativo = preco_inicial * np.exp((mu - 0.5 * sigma**2) * self.time.copy() + sigma * W.copy()) # para o caso de achar que esquecemos o sqrt(t), olha o W mais em cima
             self.ativos.append(ativo)
         self.visualizar_mercado()
@@ -182,10 +213,16 @@ class Resultados:
         desvio_padrao_investidor = []
         coeficiente_variacao_investidor = []
         variancia_investidor = []
+        media_investidor_simulacaor_relativizado = []
+
+        desvio_padrao_investidor_relativizado = []
         for i in range(0,numero_de_investidores):
             resultado_investidor = self.resultados_investidor_por_simulacao[i]
+            
             media = sum(resultado_investidor) / len(resultado_investidor)
+            
             desvio_padrao = np.std(resultado_investidor)
+            
             variancia = np.var(resultado_investidor)
             coeficiente_variacao  = (desvio_padrao / media) * 100 
 
@@ -193,12 +230,24 @@ class Resultados:
             desvio_padrao_investidor.append( desvio_padrao )
             variancia_investidor.append(variancia)
             coeficiente_variacao_investidor.append(coeficiente_variacao )
+
+            resultados = np.array(self.resultados_investidor_por_simulacao[i])
+            recurso_inicial = self.investidores.recurso_inicial
+            resultado_investidor_relativizado = resultados / recurso_inicial
+            media_relativizado = media/self.investidores.recurso_inicial
+            desvio_padrao_relativizado = np.std(resultado_investidor_relativizado)
+            media_investidor_simulacaor_relativizado.append( media_relativizado  )
+            desvio_padrao_investidor_relativizado.append( desvio_padrao_relativizado )
         
-        self.investidores.visualizar_resultado_investidores(array_min,media_investidor_simulacao)
-        self.investidores.visualizar_resultado_investidores(array_min,desvio_padrao_investidor)
-        self.investidores.visualizar_resultado_investidores(array_min,variancia_investidor)
-        self.investidores.visualizar_resultado_investidores(array_min,coeficiente_variacao_investidor)
+        # self.investidores.visualizar_resultado_investidores(array_min,media_investidor_simulacao,"media")
+        # self.investidores.visualizar_resultado_investidores(array_min,desvio_padrao_investidor,"desvio padrao")
+        # self.investidores.visualizar_resultado_investidores(array_min,variancia_investidor,"variancia")
+        # self.investidores.visualizar_resultado_investidores(array_min,coeficiente_variacao_investidor,"coeficiente de variacao")
+
+        self.investidores.visualizar_resultado_investidores_de_uma_so_vez(array_min,media_investidor_simulacao,desvio_padrao_investidor,coeficiente_variacao_investidor)
+
         
+        self.investidores.visualizar_resultado_investidores_e_desvio_padrao(media_investidor_simulacaor_relativizado,desvio_padrao_investidor_relativizado)
         
         
 
