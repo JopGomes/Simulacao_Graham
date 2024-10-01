@@ -18,7 +18,6 @@ class Investidores:
         self.investidores = np.array([[self.array_min[i], self.array_max[i]] for i in range(self.numero_de_investidores)])
 
 
-        self.resultado_investidor_i = np.full(self.numero_de_investidores, self.recurso_inicial)
 
         self.n_acao_alterada_por_iteracao = n_acao_alterada_por_iteracao
         self.max_ativos_diferentes = max_ativos_diferentes
@@ -28,6 +27,7 @@ class Investidores:
 
         self.mercado = mercado
     
+        self.resultado_investidor_i = np.full(self.numero_de_investidores, self.recurso_inicial)
         self.carteira_investidor_i = np.zeros((self.numero_de_investidores, self.mercado.numero_ativos))
 
     def visualizar_resultado_investidores(self,array_limiar,resultado_investidor_i):
@@ -41,6 +41,7 @@ class Investidores:
         n_acao_alterada_por_iteracao = self.n_acao_alterada_por_iteracao
         max_ativos_diferentes = self.max_ativos_diferentes
         numero_passos = self.numero_passos
+        
         for passo in range(0,numero_passos):
             #     if passo % 6 == 0 and passo != 0:
             #         rebalancear()
@@ -68,7 +69,11 @@ class Investidores:
                     if passo == numero_passos-1:
                         self.resultado_investidor_i[i] += self.carteira_investidor_i[i][n_ativo] * preco
                 n_ativo+=1
-
+            
+    def zerar_investidores(self,mercado):
+        self.carteira_investidor_i = np.zeros((self.numero_de_investidores, self.mercado.numero_ativos))
+        self.resultado_investidor_i = np.full(self.numero_de_investidores, self.recurso_inicial)
+        self.mercado = mercado
 
 
 class Mercado:
@@ -127,7 +132,7 @@ class Mercado:
     
     def criar_mercado(self):
 
-        self.ativos = []
+        
         self.calcular_valor_intriseco_aleatorio()
         for valor_intrinseco in self.valores_intriseco:
             mu = self.ajustar_mu(valor_intrinseco, valor_intrinseco, self.mu_base)
@@ -140,6 +145,8 @@ class Mercado:
             self.ativos.append(ativo)
         self.visualizar_mercado()
 
+    def zerar_mercado(self):
+        self.ativos = []
 
 
 class Resultados:
@@ -148,6 +155,7 @@ class Resultados:
         self.investidores = investidores
         
     
+        
     def run(self,numero_de_simulacoes,seed_base):
 
         numero_de_investidores = self.investidores.numero_de_investidores
@@ -160,8 +168,10 @@ class Resultados:
             for i in range(numero_de_investidores):
                 resultado_investidor = self.investidores.resultado_investidor_i[i]
                 self.resultados_investidor_por_simulacao[i][j] = resultado_investidor
+            self.mercado.zerar_mercado()
+            self.investidores.zerar_investidores(self.mercado)
         self.visualizar_resultado_simulacao()
-
+    
     
 
     
@@ -221,6 +231,7 @@ def main():
     T = 5  # Período de tempo (5 anos)
     N = 5*12  # Número de passos (mês) 
     dt = T / N  # Intervalo de tempo
+
     mercado = Mercado(
         numero_ativos=numero_de_ativos,
         passos=N,
@@ -239,6 +250,7 @@ def main():
                                 max_ativos_diferentes=max_ativos_diferentes,
                                 numero_passos=N
                                 )
+    
     simulacao = Resultados(mercado=mercado,investidores=investidores)
 
     simulacao.run(numero_de_simulacoes=numero_de_simulacoes,
