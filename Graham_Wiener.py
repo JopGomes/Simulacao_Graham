@@ -91,7 +91,7 @@ class Mercado:
     def calcular_valor_intriseco_aleatorio(self):
         # self.valores_intriseco = np.random.standard_normal(size=self.numero_ativos)
         # self.valores_intriseco = self.valores_intriseco * self.valores_intriseco_base
-        self.valores_intriseco = [np.random.uniform(1e-5, 1e+5) for _ in range(self.numero_ativos)]
+        self.valores_intriseco = [np.random.uniform(1e-5, 1e+3) for _ in range(self.numero_ativos)]
     
     def calcular_valor_inicial(self,valor_intriseco):
         valor_inicial = np.random.uniform(valor_intriseco *0.5, valor_intriseco*1.5)
@@ -158,11 +158,28 @@ class Resultados:
         numero_de_investidores = self.investidores.numero_de_investidores
         array_min = self.investidores.array_min
         media_investidor_simulacao = []
+        desvio_padrao_investidor = []
+        coeficiente_variacao_investidor = []
+        variancia_investidor = []
         for i in range(0,numero_de_investidores):
             resultado_investidor = self.resultados_investidor_por_simulacao[i]
-            media_investidor_simulacao.append(  sum(resultado_investidor) / len(resultado_investidor) )
+            media = sum(resultado_investidor) / len(resultado_investidor)
+            desvio_padrao = np.std(resultado_investidor)
+            variancia = np.var(resultado_investidor)
+            print(variancia)
+            coeficiente_variacao  = (desvio_padrao / media) * 100 
+
+            media_investidor_simulacao.append( media  )
+            desvio_padrao_investidor.append( desvio_padrao )
+            variancia_investidor.append(variancia)
+            coeficiente_variacao_investidor.append(coeficiente_variacao )
         
         self.investidores.visualizar_resultado_investidores(array_min,media_investidor_simulacao)
+        self.investidores.visualizar_resultado_investidores(array_min,desvio_padrao_investidor)
+        self.investidores.visualizar_resultado_investidores(array_min,variancia_investidor)
+        self.investidores.visualizar_resultado_investidores(array_min,coeficiente_variacao_investidor)
+        
+        
         
 
 
@@ -173,7 +190,7 @@ def main():
 
     #graham
     valor_intriseco_base = 50
-    limiar_min = 0.6 #limite inferior
+    limiar_min = 0.5 #limite inferior
     limiar_max = 1.1 #limite superior
     ponto_intermediario = 1 # meio termo
 
