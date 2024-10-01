@@ -75,7 +75,6 @@ class Mercado:
 
     def __init__(self, numero_ativos, valor_intriseco_base,periodo_tempo,passos,crescimento_esperado,volatibilidade):
         self.numero_ativos = numero_ativos
-        self.valores_intriseco_base = valor_intriseco_base
 
         self.T = periodo_tempo  # Período de tempo (5 anos)
         self.N = passos  # Número de passos (mês) 
@@ -91,21 +90,31 @@ class Mercado:
     def calcular_valor_intriseco_aleatorio(self):
         # self.valores_intriseco = np.random.standard_normal(size=self.numero_ativos)
         # self.valores_intriseco = self.valores_intriseco * self.valores_intriseco_base
-        self.valores_intriseco = [np.random.uniform(1e-5, 1e+3) for _ in range(self.numero_ativos)]
+        self.valores_intriseco = [np.random.uniform(1e+2, 1e+3) for _ in range(self.numero_ativos)]
     
     def calcular_valor_inicial(self,valor_intriseco):
-        valor_inicial = np.random.uniform(valor_intriseco *0.5, valor_intriseco*1.5)
+        normal = np.random.normal(1,0.5/3)
+        valor_inicial = normal* valor_intriseco
         return valor_inicial
 
 
-    def visualizar_mercado(self):
+    def visualizar_ativos(self):
         for i in range(0,self.numero_ativos):
             ativo = self.ativos[i]
-            plt.plot(self.time, ativo)
+            plt.plot(self.time, ativo.copy())
             plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
             plt.xlabel('Tempo (anos)')
             plt.ylabel('Preço do Ativo')
             plt.show()
+
+    def visualizar_mercado(self):
+        for i in range(0,self.numero_ativos):
+            ativo = self.ativos[i]
+            plt.plot(self.time, ativo.copy())
+        plt.title('Simulação de Preço de Ativo Ajustado por Graham (GBM)')
+        plt.xlabel('Tempo (anos)')
+        plt.ylabel('Preço do Ativo')
+        plt.show()
 
     # Função para calcular a margem de segurança
     def calcular_margem_de_seguranca(self,valor_intrinseco,preco_mercado):
@@ -116,19 +125,20 @@ class Mercado:
         margem_de_seguranca = self.calcular_margem_de_seguranca(valor_intrinseco,preco_mercado)
         return mu_base * (1 + margem_de_seguranca)
     
-    def criar_mercado(self,seed):
-        np.random.seed(seed)
+    def criar_mercado(self):
+
+        self.ativos = []
         self.calcular_valor_intriseco_aleatorio()
         for valor_intrinseco in self.valores_intriseco:
             mu = self.ajustar_mu(valor_intrinseco, valor_intrinseco, self.mu_base)
             sigma = self.sigma_base
             W = np.random.standard_normal(size=self.N)
-            W = np.cumsum(W) * np.sqrt(self.dt) 
+            W = np.cumsum(W.copy()) * np.sqrt(self.dt) 
             
             preco_inicial = self.calcular_valor_inicial(valor_intrinseco)
-            ativo = preco_inicial * np.exp((mu - 0.5 * sigma**2) * self.time + sigma * W) # para o caso de achar que esquecemos o sqrt(t), olha o W mais em cima
+            ativo = preco_inicial * np.exp((mu - 0.5 * sigma**2) * self.time.copy() + sigma * W.copy()) # para o caso de achar que esquecemos o sqrt(t), olha o W mais em cima
             self.ativos.append(ativo)
-        #self.visualizar_mercado()
+        self.visualizar_mercado()
 
 
 
@@ -144,7 +154,8 @@ class Resultados:
         self.resultados_investidor_por_simulacao = [[0 for _ in range(numero_de_simulacoes)] for _ in range(numero_de_investidores)]
         for j in range(numero_de_simulacoes):
             seed = seed_base  + j
-            self.mercado.criar_mercado(seed)
+            np.random.seed(seed)
+            self.mercado.criar_mercado()
             self.investidores.realizar_estrategia()
             for i in range(numero_de_investidores):
                 resultado_investidor = self.investidores.resultado_investidor_i[i]
@@ -166,7 +177,6 @@ class Resultados:
             media = sum(resultado_investidor) / len(resultado_investidor)
             desvio_padrao = np.std(resultado_investidor)
             variancia = np.var(resultado_investidor)
-            print(variancia)
             coeficiente_variacao  = (desvio_padrao / media) * 100 
 
             media_investidor_simulacao.append( media  )
@@ -199,13 +209,13 @@ def main():
     sigma_base = 0.5  # Volatilidade base
 
     #mercado
-    numero_de_ativos = 50
+    numero_de_ativos = 10
 
     #investidores 
     numero_de_investidores = 100
     recurso_inicial = 1000
     n_acao_alterada_por_iteracao = 1    
-    max_ativos_diferentes = 20
+    max_ativos_diferentes = 10
 
     # Simulação do Movimento Browniano Geométrico (GBM)
     T = 5  # Período de tempo (5 anos)
