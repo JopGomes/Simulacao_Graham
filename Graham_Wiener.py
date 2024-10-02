@@ -309,7 +309,7 @@ def main():
     valor_intriseco_base = 50
     limiar_min = 0.4 #limite inferior
     limiar_max = 1.1 #limite superior
-    ponto_intermediario = 0.9 # meio termo
+    ponto_intermediario = 1 # meio termo
 
     #wiener
     mu_base = 0.05  # Retorno base (média histórica)
