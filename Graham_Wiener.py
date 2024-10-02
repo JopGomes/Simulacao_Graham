@@ -46,7 +46,7 @@ class Investidores:
         plt.legend()  # Adiciona uma legenda para identificar cada linha
         plt.show()
 
-    def visualizar_resultado_investidores_e_desvio_padrao(self,means:list, stdv:list) -> None:
+    def visualizar_resultado_investidores_e_desvio_padrao(self,graham_min:list, means:list, stdv:list) -> None:
         x = np.arange(len(means))
         
         # Criando gráfico de barras
@@ -210,17 +210,17 @@ class Resultados:
         confidence_interval = (mean_value - margin_of_error, mean_value + margin_of_error)
         return confidence_interval
     
-    def visualizar_int_confianca(self,confidence_intervals,media):
+    def visualizar_int_confianca(self,array_min,confidence_intervals,media):
         # Convertendo o intervalo de confiança em arrays para facilitar o plot
         lower_bounds = [ci[0] for ci in confidence_intervals]
         upper_bounds = [ci[1] for ci in confidence_intervals]
 
         # Plotando os resultados
         plt.figure(figsize=(10, 6))
-        plt.plot(media, label='Valor Médio dos Investidores', color='blue', marker='o')
-        plt.fill_between(range(self.investidores.numero_de_investidores), lower_bounds, upper_bounds, color='lightblue', alpha=0.5, label='Intervalo de Confiança (95%)')
+        plt.plot(array_min,media, label='Valor Médio dos Investidores', color='blue', marker='o')
+        plt.fill_between(array_min, lower_bounds, upper_bounds, color='lightblue', alpha=0.5, label='Intervalo de Confiança (95%)')
         plt.title('Valor Médio e Intervalo de Confiança dos Investidores')
-        plt.xlabel('Investidor')
+        plt.xlabel('Graham MIN')
         plt.ylabel('Valor Final (reais)')
         plt.axhline(y=self.investidores.recurso_inicial, color='red', linestyle='--', label='Investimento Inicial')
         plt.legend()
@@ -293,23 +293,23 @@ class Resultados:
 
         self.investidores.visualizar_resultado_investidores_de_uma_so_vez(array_min,max_value_investidor,min_value_investidor)
 
-        self.investidores.visualizar_resultado_investidores_e_desvio_padrao(media_investidor_simulacaor_relativizado,desvio_padrao_investidor_relativizado)
+        self.investidores.visualizar_resultado_investidores_e_desvio_padrao(array_min,media_investidor_simulacaor_relativizado,desvio_padrao_investidor_relativizado)
         self.investidores.visualizar_resultado_investidores(array_min,n_lucro_investidor,"N > 1.3*RI")
-        self.visualizar_int_confianca(intervalo_confianca_investidor,media_investidor_simulacao)
+        self.visualizar_int_confianca(array_min,intervalo_confianca_investidor,media_investidor_simulacao)
         
         
 
 
 def main():
     #Simulacao
-    numero_de_simulacoes = 300
+    numero_de_simulacoes = 5
     seed_base =42
 
     #graham
     valor_intriseco_base = 50
-    limiar_min = 0.5 #limite inferior
+    limiar_min = 0.4 #limite inferior
     limiar_max = 1.1 #limite superior
-    ponto_intermediario = 1.5 # meio termo
+    ponto_intermediario = 0.9 # meio termo
 
     #wiener
     mu_base = 0.05  # Retorno base (média histórica)
