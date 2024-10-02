@@ -302,7 +302,7 @@ class Resultados:
 
 def main():
     #Simulacao
-    numero_de_simulacoes = 5
+    numero_de_simulacoes = 300
     seed_base =42
 
     #graham
