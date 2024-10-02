@@ -218,7 +218,7 @@ class Resultados:
         # Plotando os resultados
         plt.figure(figsize=(10, 6))
         plt.plot(media, label='Valor Médio dos Investidores', color='blue', marker='o')
-        plt.fill_between(range(self.numero_de_simulacoes), lower_bounds, upper_bounds, color='lightblue', alpha=0.5, label='Intervalo de Confiança (95%)')
+        plt.fill_between(range(self.investidores.numero_de_investidores), lower_bounds, upper_bounds, color='lightblue', alpha=0.5, label='Intervalo de Confiança (95%)')
         plt.title('Valor Médio e Intervalo de Confiança dos Investidores')
         plt.xlabel('Investidor')
         plt.ylabel('Valor Final (reais)')
@@ -243,6 +243,9 @@ class Resultados:
         intervalo_confianca_investidor = []
 
         desvio_padrao_investidor_relativizado = []
+
+        crescimento_mercado = (1+self.mercado.mu_base)**(self.mercado.T)
+
         for i in range(0,numero_de_investidores):
             resultado_investidor = self.resultados_investidor_por_simulacao[i]
             
@@ -269,11 +272,12 @@ class Resultados:
 
             maior_valor = max(resultado_investidor)
             menor_valor = min(resultado_investidor)
-            valores_maiores_que_30_percent= [valor for valor in resultado_investidor if valor > (self.investidores.recurso_inicial*1.3)]
-            n_valores_maiores_que_30_percent = len(valores_maiores_que_30_percent)
+
+            valores_maiores_que_crescimento_mercado= [valor for valor in resultado_investidor if valor > (self.investidores.recurso_inicial*crescimento_mercado)]
+            n_valores_maiores_que_crescimento_mercado = len(valores_maiores_que_crescimento_mercado)
             max_value_investidor.append(maior_valor)
             min_value_investidor.append( menor_valor )
-            n_lucro_investidor.append(n_valores_maiores_que_30_percent  )
+            n_lucro_investidor.append(n_valores_maiores_que_crescimento_mercado  )
 
 
             int_confianca = self.calcular_int_confianca(resultado_investidor)
@@ -298,24 +302,24 @@ class Resultados:
 
 def main():
     #Simulacao
-    numero_de_simulacoes = 100
+    numero_de_simulacoes = 300
     seed_base =42
 
     #graham
     valor_intriseco_base = 50
     limiar_min = 0.5 #limite inferior
     limiar_max = 1.1 #limite superior
-    ponto_intermediario = 1 # meio termo
+    ponto_intermediario = 1.5 # meio termo
 
     #wiener
     mu_base = 0.05  # Retorno base (média histórica)
-    sigma_base = 0.07  # Volatilidade base
+    sigma_base = 0.03  # Volatilidade base
 
     #mercado
     numero_de_ativos = 10
 
     #investidores 
-    numero_de_investidores = 100
+    numero_de_investidores = 150
     recurso_inicial = 1000
     n_acao_alterada_por_iteracao = 1    
     max_ativos_diferentes = 10
