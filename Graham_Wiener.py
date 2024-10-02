@@ -1,11 +1,7 @@
 #Definição das funções
 import numpy as np
 import matplotlib.pyplot as plt
-
-# Função para calcular o valor intrínseco usando a fórmula de Graham
-def calcular_valor_intrinseco(LPA, VPA):
-    return np.sqrt(22.5 * LPA * VPA)
-
+import scipy.stats as stats
 
 
 class Investidores:
@@ -174,21 +170,22 @@ class Mercado:
             
             ativo = preco_inicial * np.exp((mu - 0.5 * sigma**2) * self.time.copy() + sigma * W.copy()) # para o caso de achar que esquecemos o sqrt(t), olha o W mais em cima
             self.ativos.append(ativo)
-        self.visualizar_mercado()
+        # self.visualizar_mercado()
 
     def zerar_mercado(self):
         self.ativos = []
 
 
 class Resultados:
-    def __init__(self, mercado,investidores):
+    def __init__(self, mercado,investidores,numero_de_simulacoes):
         self.mercado = mercado
         self.investidores = investidores
+        self.numero_de_simulacoes = numero_de_simulacoes
         
     
         
-    def run(self,numero_de_simulacoes,seed_base):
-
+    def run(self,seed_base):
+        numero_de_simulacoes = self.numero_de_simulacoes
         numero_de_investidores = self.investidores.numero_de_investidores
         self.resultados_investidor_por_simulacao = [[0 for _ in range(numero_de_simulacoes)] for _ in range(numero_de_investidores)]
         for j in range(numero_de_simulacoes):
@@ -202,7 +199,33 @@ class Resultados:
             self.mercado.zerar_mercado()
             self.investidores.zerar_investidores(self.mercado)
         self.visualizar_resultado_simulacao()
+
+    def calcular_int_confianca(self,results,confidence_level=0.95):
+        mean_value = np.mean(results)
+        std_err = stats.sem(results) 
+        alpha = 1 - confidence_level
+        t_value = stats.t.ppf(1 - alpha/2, df=len(results)-1)
+        margin_of_error = t_value * std_err
+
+        confidence_interval = (mean_value - margin_of_error, mean_value + margin_of_error)
+        return confidence_interval
     
+    def visualizar_int_confianca(self,confidence_intervals,media):
+        # Convertendo o intervalo de confiança em arrays para facilitar o plot
+        lower_bounds = [ci[0] for ci in confidence_intervals]
+        upper_bounds = [ci[1] for ci in confidence_intervals]
+
+        # Plotando os resultados
+        plt.figure(figsize=(10, 6))
+        plt.plot(media, label='Valor Médio dos Investidores', color='blue', marker='o')
+        plt.fill_between(range(self.numero_de_simulacoes), lower_bounds, upper_bounds, color='lightblue', alpha=0.5, label='Intervalo de Confiança (95%)')
+        plt.title('Valor Médio e Intervalo de Confiança dos Investidores')
+        plt.xlabel('Investidor')
+        plt.ylabel('Valor Final (reais)')
+        plt.axhline(y=self.investidores.recurso_inicial, color='red', linestyle='--', label='Investimento Inicial')
+        plt.legend()
+        plt.grid()
+        plt.show()
     
 
     
@@ -214,6 +237,10 @@ class Resultados:
         coeficiente_variacao_investidor = []
         variancia_investidor = []
         media_investidor_simulacaor_relativizado = []
+        max_value_investidor = []
+        min_value_investidor = []
+        n_lucro_investidor = []
+        intervalo_confianca_investidor = []
 
         desvio_padrao_investidor_relativizado = []
         for i in range(0,numero_de_investidores):
@@ -238,6 +265,20 @@ class Resultados:
             desvio_padrao_relativizado = np.std(resultado_investidor_relativizado)
             media_investidor_simulacaor_relativizado.append( media_relativizado  )
             desvio_padrao_investidor_relativizado.append( desvio_padrao_relativizado )
+
+
+            maior_valor = max(resultado_investidor)
+            menor_valor = min(resultado_investidor)
+            valores_maiores_que_30_percent= [valor for valor in resultado_investidor if valor > (self.investidores.recurso_inicial*1.3)]
+            n_valores_maiores_que_30_percent = len(valores_maiores_que_30_percent)
+            max_value_investidor.append(maior_valor)
+            min_value_investidor.append( menor_valor )
+            n_lucro_investidor.append(n_valores_maiores_que_30_percent  )
+
+
+            int_confianca = self.calcular_int_confianca(resultado_investidor)
+            intervalo_confianca_investidor.append(int_confianca)
+
         
         # self.investidores.visualizar_resultado_investidores(array_min,media_investidor_simulacao,"media")
         # self.investidores.visualizar_resultado_investidores(array_min,desvio_padrao_investidor,"desvio padrao")
@@ -246,15 +287,18 @@ class Resultados:
 
         self.investidores.visualizar_resultado_investidores_de_uma_so_vez(array_min,media_investidor_simulacao,desvio_padrao_investidor,coeficiente_variacao_investidor)
 
-        
+        self.investidores.visualizar_resultado_investidores_de_uma_so_vez(array_min,max_value_investidor,min_value_investidor)
+
         self.investidores.visualizar_resultado_investidores_e_desvio_padrao(media_investidor_simulacaor_relativizado,desvio_padrao_investidor_relativizado)
+        self.investidores.visualizar_resultado_investidores(array_min,n_lucro_investidor,"N > 1.3*RI")
+        self.visualizar_int_confianca(intervalo_confianca_investidor,media_investidor_simulacao)
         
         
 
 
 def main():
     #Simulacao
-    numero_de_simulacoes = 5
+    numero_de_simulacoes = 100
     seed_base =42
 
     #graham
@@ -265,7 +309,7 @@ def main():
 
     #wiener
     mu_base = 0.05  # Retorno base (média histórica)
-    sigma_base = 0.5  # Volatilidade base
+    sigma_base = 0.07  # Volatilidade base
 
     #mercado
     numero_de_ativos = 10
@@ -300,11 +344,13 @@ def main():
                                 numero_passos=N
                                 )
     
-    simulacao = Resultados(mercado=mercado,investidores=investidores)
+    simulacao = Resultados(
+                            mercado=mercado,
+                            investidores=investidores,
+                            numero_de_simulacoes=numero_de_simulacoes
+                           )
 
-    simulacao.run(numero_de_simulacoes=numero_de_simulacoes,
-                  seed_base= seed_base
-                  )
+    simulacao.run(seed_base= seed_base)
 
 
 if __name__ == "__main__":
