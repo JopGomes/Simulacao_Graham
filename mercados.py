@@ -38,7 +38,8 @@ class Market:
     def update_fair_stock_prices(self):        
         for i in range(self.number_of_stocks_in_market):
             #self.fair_stock_prices[i] = self.fair_stock_prices[i]*((1+self.volativity_month)**12)
-            variation = max(-0.2,min(random.normalvariate(ANUAL_STOCK_VOLABILITY, MONTHLY_CONTROL_LIMIT/3),0.2))
+            variation = random.normalvariate(ANUAL_STOCK_VOLABILITY, MONTHLY_CONTROL_LIMIT/3)
+            #thresholded_variation = max(-0.2,min(random.normalvariate(ANUAL_STOCK_VOLABILITY, MONTHLY_CONTROL_LIMIT/3),0.2))
             self.fair_stock_prices[i] = self.fair_stock_prices[i]*(1+variation)
             
     def generate_new_graham_values(self, months = 0):
@@ -50,8 +51,8 @@ class Market:
     def generate_initial_real_stock_prices(self):
         for i in range(self.number_of_stocks_in_market):
             graham_value = random.normalvariate(GRAHAM_AVERAGE, GRAHAM_INTERVAL/3)
-            thresholded_graham_value = max(MININUM_GRAHAM_RATIO,min(graham_value,MAXIMUM_GRAHAM_RATIO))
-            self.real_stock_prices[i] = round(thresholded_graham_value * self.fair_stock_prices[i],6)
+            #thresholded_graham_value = max(MININUM_GRAHAM_RATIO,min(graham_value,MAXIMUM_GRAHAM_RATIO))
+            self.real_stock_prices[i] = round(graham_value * self.fair_stock_prices[i],6)
             
             
             
