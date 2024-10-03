@@ -28,7 +28,11 @@ def generate_estrategies() -> list[dict]:
                 estragies.append({'buy':actual_buy_limit, 'sell':actual_sell_limit})
             actual_sell_limit+=step
         actual_buy_limit+=step
-        
+    print(estragies[85])
+    print(estragies[86])
+    print(estragies[96])
+    print(estragies[97])
+    print(estragies[107])
     return estragies
 
 def generate_markets() -> list[Market]:
@@ -47,8 +51,7 @@ def generate_investors(estrategies:list[dict]) -> list[Investor]:
         investors.append(Investor(INITIAL_MONEY, estrategy))
         
     return investors
-
-        
+       
 def calculate_heritage_of_investors(investors:list[Investor],stocks_prices:dict) -> list[float]:
     result = []   
     for investor in investors:
